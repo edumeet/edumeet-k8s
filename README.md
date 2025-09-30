@@ -94,9 +94,9 @@ graph TD;
 ```
 For the authentication to work:
 
-The room server config has to have a management server defined
-
-The edumeet client has to have managementUrl and loginEnabled parameters.
+- The room server config has to have a management server defined
+- The edumeet client has to have managementUrl and loginEnabled parameters.
+- Have an OIDC provider, and configure it in the management service with the local super administrator account.
 
 If the default roles are defined in the room server it will be used for an unmanaged room.
 
@@ -105,3 +105,5 @@ There is no current default role options for a tenant, only for a managed room i
 There is an option to define multiple media nodes, the server will ping them periodically and try to load balance between them. 
 
 Changing configuration at the moment requires restart for the room-server/media-node/management-server pods.
+
+For management server the initial password is set with a database migration, and do not update a second time. (so for that you need to add a new migration file to the config)
