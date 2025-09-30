@@ -1,4 +1,4 @@
-# ![eduMEET](https://github.com/edumeet/edumeet-docker/raw/main/images/logo.edumeet.svg) in Docker container with k8s for version (4.x)
+# ![eduMEET](https://github.com/edumeet/edumeet-docker/raw/main/images/logo.edumeet.svg) with k8s for version (4.x)
 
 This is a "k8s" version of [eduMEET](https://github.com/edumeet/edumeet). 
 

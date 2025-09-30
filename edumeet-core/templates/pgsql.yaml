@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: edumeet-db
+  namespace: {{ .Values.nameSpace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: edumeet-db
+  template:
+    metadata:
+      labels:
+        app: edumeet-db
+    spec:
+      containers:
+      - name: edumeet
+        image: docker.io/postgres:14.1-alpine
+        imagePullPolicy: "Always"
+        env:
+        - name: POSTGRES_USER
+          value: "edumeet"
+        - name: POSTGRES_PASSWORD
+          value: "edumeet"
+        ports:
+        - containerPort: 5432
+          name: http
+          protocol: TCP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{ .Values.nameSpace }}
+  name: edumeet-db
+spec:
+  selector:
+    app: edumeet-db
+  clusterIP: None
+  ports:
+    - name: http
+      port: 5432
+
