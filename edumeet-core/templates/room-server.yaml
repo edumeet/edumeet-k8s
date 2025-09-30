@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: room-server
+  namespace: {{ .Values.nameSpace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: room-server
+  template:
+    metadata:
+      labels:
+        app: room-server
+    spec:
+      containers:
+      - name: edumeet
+        image: edumeet/edumeet-room-server:{{ .Values.edumeetVersion }}
+        imagePullPolicy: "Always"
+        #    livenessProbe:
+        #      httpGet:
+        #        path: /
+        #        port: 8443
+        env:
+        - name: MANAGEMENT_USERNAME
+          value: {{ .Values.roomServer.username | quote }}
+        - name: MANAGEMENT_PASSWORD
+          value: {{ .Values.roomServer.password | quote }}
+        - name: SERVER_DEBUG
+          value: {{ .Values.debug | quote }}
+        ports:
+        - containerPort: 8443
+          name: http
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /usr/src/app/config/config.json
+          name: room-server-config
+          subPath: config.json
+      volumes:
+        - name: room-server-config
+          configMap:
+            name: server-config-v4
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{ .Values.nameSpace }}
+  name: io
+spec:
+  selector:
+    app: room-server
+  clusterIP: None
+  ports:
+    - name: http
+      port: 8443
+      protocol: TCP
+
+
+

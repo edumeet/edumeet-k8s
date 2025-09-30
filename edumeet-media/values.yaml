@@ -1,0 +1,18 @@
+replicaCount: 2
+hostNetwork: true
+IPpoolName: pool-global
+edumeetVersion: 4.1-20250930-stable
+sharedSecret: "secret-shared-with-media-node" 
+
+# If hostNetwork false:
+service:
+  port: 3000
+  extdomain: media.yourdomain.com
+
+# If hostneNetwork true: 
+mediaPod:
+  IP: 1.2.3.4
+  announcedIP: 1.2.3.4
+  IP6: fe80:1::4
+  nodeSelector: dev2
+    

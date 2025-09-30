@@ -1,0 +1,15 @@
+apiVersion: v1
+data:
+  edumeet-demo-cert.pem: |
+    -----BEGIN CERTIFICATE-----
+    ...
+    -----END CERTIFICATE-----
+  edumeet-demo-key.pem: |+
+    -----BEGIN PRIVATE KEY-----
+    ...
+    -----END PRIVATE KEY-----
+kind: ConfigMap
+metadata:
+  name: certificates-v4
+  namespace: edumeet-media
+

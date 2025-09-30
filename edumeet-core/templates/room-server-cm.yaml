@@ -1,0 +1,143 @@
+apiVersion: v1
+data:
+  config.json: |
+    {
+        "listenPort": "8443",
+        "listenHost": "0.0.0.0",
+        "managementService": {
+            "host": "http://mgmt:3030",
+                "jwtPublicKeys": [
+                    {{ .Values.roomServer.jwtPublicKeys | quote }}
+                ]
+        },
+        "defaultRoomSettings": {
+                "defaultRole": {
+
+                {{- if .Values.roomServer.isPublic }}
+                        "id": 0,
+                        "name": "Default",
+                        "description": "Default role",
+                        "permissions": [
+                                { "name": "CHANGE_ROOM_LOCK" },
+                                { "name": "PROMOTE_PEER" },
+                                { "name": "SEND_CHAT" },
+                                { "name": "MODERATE_CHAT" },
+                                { "name": "SHARE_AUDIO" },
+                                { "name": "SHARE_VIDEO" },
+                                { "name": "SHARE_SCREEN" },
+                                { "name": "SHARE_EXTRA_VIDEO" },
+                                { "name": "SHARE_FILE" },
+                                { "name": "MODERATE_FILES" },
+                                { "name": "MODERATE_ROOM" },
+                                { "name": "LOCAL_RECORD_ROOM" },
+                                { "name": "CREATE_ROOM" },
+                                { "name": "CHANGE_ROOM" }
+                        ]
+                {{- end }}
+                },
+                "maxActiveVideos": {{ .Values.roomServer.maxActiveVideos }},
+                "locked": false,
+                "breakoutsEnabled": true,
+                "chatEnabled": true,
+                "raiseHandEnabled": true,
+                "filesharingEnabled": false,
+                "localRecordingEnabled": true
+        },
+        "mediaNodes": [
+
+        {{- $size := len .Values.roomServer.mediaServers -}}
+        {{- range $i, $v := .Values.roomServer.mediaServers }}
+            {
+                "hostname": {{ $v.hostname | quote }},
+                "port": 3000,
+                "secret": {{ $v.mediaSecret | quote }},
+                "latitude": {{ $v.latitude }},
+                "longitude": {{ $v.longitude }},
+                "turnHostname": {{ $v.turnHostname | quote }},
+                "turnports": [
+                     {
+                       "protocol": {{ $v.turnProto | quote }},
+                       "port": {{ $v.turnPort | quote }},
+                       "transport": {{ $v.turnTransport | quote }}
+
+                     }
+                ]
+            }
+        {{- if gt (sub $size 1) $i -}},{{- end -}}
+        {{- end }}
+
+        ]
+    }
+  config.json.template: |
+    {
+        "listenPort": "8443",
+        "listenHost": "0.0.0.0",
+        "managementService": {
+            "host": "http://mgmt:3030",
+                "jwtPublicKeys": [
+                    {{ .Values.roomServer.jwtPublicKeys | quote }}
+                ]
+        },
+        "defaultRoomSettings": {
+                "defaultRole": {
+
+                {{- if .Values.roomServer.isPublic }}
+                        "id": 0,
+                        "name": "Default",
+                        "description": "Default role",
+                        "permissions": [
+                                { "name": "CHANGE_ROOM_LOCK" },
+                                { "name": "PROMOTE_PEER" },
+                                { "name": "SEND_CHAT" },
+                                { "name": "MODERATE_CHAT" },
+                                { "name": "SHARE_AUDIO" },
+                                { "name": "SHARE_VIDEO" },
+                                { "name": "SHARE_SCREEN" },
+                                { "name": "SHARE_EXTRA_VIDEO" },
+                                { "name": "SHARE_FILE" },
+                                { "name": "MODERATE_FILES" },
+                                { "name": "MODERATE_ROOM" },
+                                { "name": "LOCAL_RECORD_ROOM" },
+                                { "name": "CREATE_ROOM" },
+                                { "name": "CHANGE_ROOM" }
+                        ]
+                {{- end }}
+                },
+                "maxActiveVideos": {{ .Values.roomServer.maxActiveVideos }},
+                "locked": false,
+                "breakoutsEnabled": true,
+                "chatEnabled": true,
+                "raiseHandEnabled": true,
+                "filesharingEnabled": true,
+                "localRecordingEnabled": true
+        },
+        "mediaNodes": [
+
+        {{- $size := len .Values.roomServer.mediaServers -}}
+        {{- range $i, $v := .Values.roomServer.mediaServers }}
+            {
+                "hostname": {{ $v.hostname | quote }},
+                "port": 3000,
+                "secret": {{ $v.mediaSecret | quote }},
+                "latitude": {{ $v.latitude }},
+                "longitude": {{ $v.longitude }},
+                "turnHostname": {{ $v.turnHostname | quote }},
+                "turnports": [
+                     {
+                       "protocol": {{ $v.turnProto | quote }},
+                       "port": {{ $v.turnPort | quote }},
+                       "transport": {{ $v.turnTransport | quote }}
+
+                     }
+                ]
+            }
+        {{- if gt (sub $size 1) $i -}},{{- end -}}
+        {{- end }}
+
+        ]
+    }
+kind: ConfigMap
+metadata:
+  name: server-config-v4
+  namespace: {{ .Values.nameSpace }}
+

@@ -1,0 +1,57 @@
+apiVersion: v1
+data:
+  config.js: |-
+    /**
+     * Edumeet App Configuration
+     *
+     * The configuration documentation is available also:
+     * - in the app/README.md file in the source tree
+     */
+    
+    // eslint-disable-next-line
+    var config = {
+        // If ability to log in is enabled.
+        loginEnabled: {{ .Values.client.loginEnabled }},
+    
+        managementUrl: {{ .Values.client.managementUrl | quote  }},
+    
+        // The development server listening port.
+        developmentPort: 8000,
+    
+        // The production server listening port.
+        productionPort: 443,
+
+        p2penabled: false
+    
+    };
+  manifest.json: |-
+    {
+      "short_name": "Edumeet",
+      "name": "Edumeet",
+      "icons": [
+        {
+          "src": "../images/favicon.ico",
+          "sizes": "64x64 32x32 24x24 16x16",
+          "type": "image/x-icon"
+        },
+        {
+          "src": "../images/logo192.png",
+          "type": "image/png",
+          "sizes": "192x192"
+        },
+        {
+          "src": "../images/logo512.png",
+          "type": "image/png",
+          "sizes": "512x512"
+        }
+      ],
+      "start_url": "../",
+      "display": "standalone",
+      "theme_color": "#000000",
+      "background_color": "#ffffff"
+    }
+kind: ConfigMap
+metadata:
+  name: client-config-v4
+  namespace: {{ .Values.nameSpace }}
+

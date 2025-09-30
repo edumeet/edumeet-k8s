@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: edumeet-client
+  namespace: {{ .Values.nameSpace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: edumeet-client
+  template:
+    metadata:
+      labels:
+        app: edumeet-client
+    spec:
+      containers:
+      - name: edumeet
+        image: edumeet/edumeet-client:{{ .Values.edumeetVersion }}
+        imagePullPolicy: "Always"
+        #    livenessProbe:
+        #      httpGet:
+        #        path: /
+        #        port: 80
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /app/config
+          name: edumeet-client-config
+      volumes:
+        - name: edumeet-client-config
+          configMap:
+            name: client-config-v4 
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{ .Values.nameSpace }}
+  name: client
+spec:
+  selector:
+    app: edumeet-client
+  clusterIP: None
+  ports:
+    - name: http
+      port: 80
+

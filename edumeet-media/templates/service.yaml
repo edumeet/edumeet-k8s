@@ -1,0 +1,17 @@
+{{ if not .Values.hostNetwork }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: media
+  namespace: edumeet-media
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: {{ .Values.service.extdomain }}
+spec:
+  selector:
+    app: media
+  clusterIP: None
+  ports:
+    - protocol: TCP
+      port: {{ .Values.service.port }}
+      targetPort: http
+{{ end }}

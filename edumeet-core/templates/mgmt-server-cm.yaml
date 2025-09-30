@@ -1,0 +1,76 @@
+apiVersion: v1
+data:
+  202310300000000_migrate.ts: |-
+    import { Knex } from 'knex';
+    import bcrypt from 'bcryptjs';
+
+    export async function up(knex: Knex): Promise<void> {
+        await knex('users').where('id', '=', 1).update({
+        email: '{{ .Values.roomServer.username }}',
+        password: bcrypt.hashSync('{{ .Values.roomServer.password }}', 10)
+        });
+    }
+    export async function down(knex: Knex): Promise<void> {
+
+    }
+kind: ConfigMap
+metadata:
+  name: mgmt-pwchange-v4
+  namespace: {{ .Values.nameSpace }}
+
+---
+
+apiVersion: v1
+data:
+  default.json: |
+    {
+        "host": "0.0.0.0",
+        "port": 3030,
+        "public": "./public/",
+        "origins": [
+                "*"
+        ],
+        "paginate": {
+                "default": 10,
+                "max": 50
+        },
+        "postgresql": {
+                "client": {{ .Values.mgmtServer.db.client | quote }},
+                "connection": {{ .Values.mgmtServer.db.connection | quote }}
+        },
+        "authentication": {
+                "entity": "user",
+                "service": "users",
+                "secret": {{ .Values.mgmtServer.secret | quote }},
+                "authStrategies": [
+                        "jwt",
+                        "local",
+                        "oauth"
+                ],
+                "jwtOptions": {
+                        "header": {
+                                "typ": "access"
+                        },
+                        "audience": {{ .Values.mgmtServer.audience | quote }},
+                        "algorithm": "RS256",
+                        "expiresIn": "1d"
+                },
+                "local": {
+                        "usernameField": "email",
+                        "passwordField": "password"
+                },
+                "oauth": {
+                        "tenant": {
+                                "oauth": 2,
+                                "dynamic": [ "key", "secret", "authorize_url", "access_url", "profile_url", "scope_delimiter", "scope" ],
+                                "token_endpoint_auth_method": "client_secret_basic",
+                                "redirect_uri": "{{ .Values.client.managementUrl }}/oauth/tenant/callback"
+                        }
+                }
+        }
+    }
+kind: ConfigMap
+metadata:
+  name: mgmt-server-config-v4
+  namespace: {{ .Values.nameSpace }}
+

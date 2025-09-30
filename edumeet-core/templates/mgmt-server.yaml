@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: management-server
+  namespace: {{ .Values.nameSpace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: management-server
+  template:
+    metadata:
+      labels:
+        app: management-server
+    spec:
+      containers:
+      - name: edumeet
+        image: edumeet/edumeet-management-server:{{ .Values.edumeetVersion }}
+        imagePullPolicy: "Always"
+        #    livenessProbe:
+        #      httpGet:
+        #        path: /
+        #        port: 3030
+        env:
+        - name: NODE_TLS_REJECT_UNAUTHORIZED
+          value: "0"
+        - name: MGMT_DEBUG
+          value: {{ .Values.debug | quote }}
+        ports:
+        - containerPort: 3030
+          name: http
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /usr/src/app/config
+          name: management-server-config
+        - mountPath: /usr/src/app/migrations/202310300000000_migrate.ts
+          name: pwchange
+          subPath: 202310300000000_migrate.ts
+      volumes:
+        - name: management-server-config
+          configMap:
+            name: mgmt-server-config-v4
+        - name: pwchange
+          configMap:
+            name: mgmt-pwchange-v4
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{ .Values.nameSpace }}
+  name: mgmt
+spec:
+  selector:
+    app: management-server
+  clusterIP: None
+  ports:
+    - name: http
+      port: 3030
+

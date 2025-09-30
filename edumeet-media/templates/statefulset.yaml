@@ -1,0 +1,107 @@
+{{ if not .Values.hostNetwork }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: media
+  namespace: edumeet-media
+spec:
+  serviceName: media
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: media
+  template:
+    metadata:
+      labels:
+        app: media
+    spec:
+      containers:
+      - name: edumeet
+        image: edumeet/edumeet-media-node:{{ .Values.edumeetVersion}}
+        imagePullPolicy: "Always"
+        #    livenessProbe:
+        #      httpGet:
+        #        path: /
+        #        port: 3000
+        args: ["--secret", {{ .Values.sharedSecret | quote  }}, "--ip", $(MN_IP)]
+        env:
+        - name: MN_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: MN_DEBUG
+          value: "*"
+        ports:
+        - containerPort: 3000
+          name: http
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /usr/src/app/certs
+          name: certs
+      - name: turn
+        image: instrumentisto/coturn
+        args: ["-n", "--listening-port=3478", "--realm=edumeet", "--lt-cred-mech", "--no-tls", "--no-dtls", "--no-multicast-peers", "--no-cli", "--stale-nonce", "--min-port=50000", "--max-port=51999", "--user=secret:{{ .Values.sharedSecret }}"]
+        ports:
+        - containerPort: 3478
+          name: stun
+          protocol: UDP
+      volumes:
+        - name: certs
+          configMap:
+            name: certificates-v4
+{{ else }}
+apiVersion: v1
+kind: Pod
+metadata:
+  namespace: edumeet-media
+  name: media-node
+  labels:
+    app: media-node
+spec:
+  hostNetwork: true
+  nodeSelector:
+    kubernetes.io/hostname: {{ .Values.mediaPod.nodeSelector }}
+  containers:
+  - name: edumeet
+    image: edumeet/edumeet-media-node:{{ .Values.edumeetVersion}}
+    imagePullPolicy: "Always"
+    #    livenessProbe:
+    #      httpGet:
+    #        path: /
+    #        port: 3000
+    args: ["--secret", {{ .Values.sharedSecret | quote  }}, "--ip", {{ .Values.mediaPod.IP | quote }}, "--announcedIp",  {{ .Values.mediaPod.announcedIP | quote }}, "--ip6", {{ .Values.mediaPod.IP6 | quote }}]
+    env:
+    - name: MN_IP
+      value: {{ .Values.mediaPod.IP | quote }}
+    - name: MN_IP6
+      value: {{ .Values.mediaPod.IP6 | quote }}
+    - name: BRANCH_MN_SERVER_SECRET
+      value: {{ .Values.sharedSecret | quote  }}
+    - name: MN_DEBUG
+      value: "*"
+    ports:
+    - containerPort: 3000
+      name: http
+      protocol: TCP
+    volumeMounts:
+    - mountPath: /usr/src/app/certs
+      name: certs
+  - name: turn
+    image: instrumentisto/coturn
+    args: ["-n", "--listening-ip={{ .Values.mediaPod.IP }}", "--listening-port=3478", "--external-ip={{ .Values.mediaPod.announcedIP }}", "--realm=edumeet", "--lt-cred-mech", "--no-tcp-relay", "--no-tls", "--no-dtls", "--no-multicast-peers", "--no-cli", "--stale-nonce", "--min-port=50000", "--max-port=64999", "--user=secret:{{ .Values.sharedSecret }}"]
+    ports:
+    - containerPort: 3478
+      name: stun
+      protocol: UDP
+  volumes:
+    - name: certs
+      configMap:
+        name: certificates-v4
+{{ end }}
+
+
+
+
+
+
+
